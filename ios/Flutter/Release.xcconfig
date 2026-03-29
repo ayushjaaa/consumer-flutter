@@ -1,1 +1,5 @@
+#include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"
 #include "Generated.xcconfig"
+
+SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"
+SDK_NAME[sdk=iphonesimulator*] = iphonesimulator
