@@ -17,7 +17,10 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      return web;
+      throw UnsupportedError(
+        'DefaultFirebaseOptions have not been configured for web - '
+        'you can reconfigure this by running the FlutterFire CLI again.',
+      );
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -25,9 +28,15 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        return macos;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for macos - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.windows:
-        return windows;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for windows - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -39,16 +48,6 @@ class DefaultFirebaseOptions {
         );
     }
   }
-
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCy-Lx4MYhPpalSK_UVS2YjJi2m1gDmI7U',
-    appId: '1:1007404411041:web:b38ba504357c1fb8c468e0',
-    messagingSenderId: '1007404411041',
-    projectId: 'onetap365-3df10',
-    authDomain: 'onetap365-3df10.firebaseapp.com',
-    storageBucket: 'onetap365-3df10.firebasestorage.app',
-    measurementId: 'G-YYFWQHJL7S',
-  );
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyAs8XnxK8Spekxh-q_aydd3EKbWkwxfS_E',
@@ -65,24 +64,5 @@ class DefaultFirebaseOptions {
     projectId: 'onetap365-3df10',
     storageBucket: 'onetap365-3df10.firebasestorage.app',
     iosBundleId: 'com.example.onetap365app',
-  );
-
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyAu7o7nyP9sbN46QpULgufd4JFq269BgsY',
-    appId: '1:1007404411041:ios:be2a37b8048926aac468e0',
-    messagingSenderId: '1007404411041',
-    projectId: 'onetap365-3df10',
-    storageBucket: 'onetap365-3df10.firebasestorage.app',
-    iosBundleId: 'com.example.onetap365app',
-  );
-
-  static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyCy-Lx4MYhPpalSK_UVS2YjJi2m1gDmI7U',
-    appId: '1:1007404411041:web:a29444e94d9523e9c468e0',
-    messagingSenderId: '1007404411041',
-    projectId: 'onetap365-3df10',
-    authDomain: 'onetap365-3df10.firebaseapp.com',
-    storageBucket: 'onetap365-3df10.firebasestorage.app',
-    measurementId: 'G-Z96HHLDXT6',
   );
 }
