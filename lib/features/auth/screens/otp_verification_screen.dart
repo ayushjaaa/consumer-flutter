@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:onetap365app/core/constants/app_colors.dart';
 import 'package:onetap365app/data/repositories/auth_repository.dart';
 import 'package:onetap365app/features/auth/screens/signup_info_screen.dart';
@@ -8,12 +9,12 @@ import '../widgets/success_otp.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   final String phoneNumber;
-  final String? verificationId;
+  final String verificationId;
 
   const OtpVerificationScreen({
     super.key,
     required this.phoneNumber,
-    this.verificationId,
+    required this.verificationId,
   });
 
   @override
@@ -27,9 +28,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
   final AuthRepository _authRepository = AuthRepository();
 
+  late String _currentVerificationId;
+  int? _resendToken;
+
   @override
   void initState() {
     super.initState();
+    _currentVerificationId = widget.verificationId;
   }
 
   bool get _isOtpComplete => _controllers.every((c) => c.text.isNotEmpty);
@@ -200,31 +205,42 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                             setState(() => _isVerifying = true);
 
                             try {
-                              // If you have logic that uses Firebase as a backend 
-                              // backup, you can keep some code, but here we go 
-                              // straight to backend verification.
-                              
-                              final result = await _authRepository.verifyOtp(
-                                phoneNumber: widget.phoneNumber,
-                                otp: otp,
+                              // Create a PhoneAuthCredential with the code
+                              PhoneAuthCredential credential =
+                                  PhoneAuthAuthProvider.credential(
+                                verificationId: _currentVerificationId,
+                                smsCode: otp,
                               );
+
+                              // Sign the user in with Firebase
+                              final UserCredential userCredential =
+                                  await FirebaseAuth.instance
+                                      .signInWithCredential(credential);
 
                               if (!mounted) return;
 
-                              if (result['success']) {
-                                setState(() {
-                                  _isVerifying = false;
-                                  _isVerified = true;
-                                });
-                                _showVerificationSuccess();
-                              } else {
-                                setState(() => _isVerifying = false);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(result['message'] ??
-                                        'Verification failed'),
-                                  ),
+                              if (userCredential.user != null) {
+                                // After Firebase success, notify your backend if needed
+                                final result = await _authRepository.verifyOtp(
+                                  phoneNumber: widget.phoneNumber,
+                                  otp: otp,
                                 );
+
+                                if (result['success']) {
+                                  setState(() {
+                                    _isVerifying = false;
+                                    _isVerified = true;
+                                  });
+                                  _showVerificationSuccess();
+                                } else {
+                                  setState(() => _isVerifying = false);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(result['message'] ??
+                                          'Backend registration failed'),
+                                    ),
+                                  );
+                                }
                               }
                             } catch (e) {
                               if (!mounted) return;
@@ -285,17 +301,29 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 child: GestureDetector(
                   onTap: () async {
                     try {
-                      final result = await _authRepository.resendOtp(widget.phoneNumber);
-
-                      if (result['success']) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('OTP Resent!')),
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(result['message'] ?? 'Resend failed')),
-                        );
-                      }
+                      await FirebaseAuth.instance.verifyPhoneNumber(
+                        phoneNumber: widget.phoneNumber.startsWith('+')
+                            ? widget.phoneNumber
+                            : '+${widget.phoneNumber}',
+                        forceResendingToken: _resendToken,
+                        verificationCompleted: (_) {},
+                        verificationFailed: (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text('Resend Error: ${e.message}')),
+                          );
+                        },
+                        codeSent: (String id, int? token) {
+                          setState(() {
+                            _currentVerificationId = id;
+                            _resendToken = token;
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('OTP Resent!')),
+                          );
+                        },
+                        codeAutoRetrievalTimeout: (_) {},
+                      );
                     } catch (e) {
                       if (!mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(

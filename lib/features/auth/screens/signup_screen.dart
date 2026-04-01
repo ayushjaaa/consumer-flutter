@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:onetap365app/core/constants/app_colors.dart';
 import 'package:onetap365app/data/repositories/auth_repository.dart';
 
@@ -44,27 +45,32 @@ class _SignUpScreenState extends State<SignUpScreen> {
     });
 
     try {
-      final result = await _authRepository.sendOtp(phone); // Pass the 10-digit number or +91 based on your backend
-
-      if (result['success']) {
-        if (mounted) {
+      await FirebaseAuth.instance.verifyPhoneNumber(
+        phoneNumber: '+91$phone',
+        verificationCompleted: (PhoneAuthCredential credential) async {
+          // Automatic handling (Android only)
+          await FirebaseAuth.instance.signInWithCredential(credential);
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Verification Failed: ${e.message}')),
+          );
+        },
+        codeSent: (String verificationId, int? resendToken) {
           setState(() => _isLoading = false);
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => OtpVerificationScreen(
-                phoneNumber: phone,
-                verificationId: null, // No Firebase ID needed for backend flow
+                phoneNumber: '91$phone',
+                verificationId: verificationId,
               ),
             ),
           );
-        }
-      } else {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['message'] ?? 'Failed to send OTP')),
-        );
-      }
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {},
+      );
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
