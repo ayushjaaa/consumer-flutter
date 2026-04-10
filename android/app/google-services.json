@@ -12,7 +12,12 @@
           "package_name": "com.example.onetap365app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1007404411041-fqsdfoecdkgobolqkvcd4m8sqhkcgqnn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAs8XnxK8Spekxh-q_aydd3EKbWkwxfS_E"
@@ -20,7 +25,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1007404411041-fqsdfoecdkgobolqkvcd4m8sqhkcgqnn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

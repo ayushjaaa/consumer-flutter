@@ -45,35 +45,63 @@ class _SignUpScreenState extends State<SignUpScreen> {
     });
 
     try {
+      // First, notify backend that OTP is being sent
+      final backendPhoneNumber = '91$phone';
+      print('📤 Notifying backend to generate OTP for $backendPhoneNumber');
+      final backendResult = await _authRepository.sendOtp(backendPhoneNumber);
+
+      if (!backendResult['success']) {
+        print('⚠️ Backend OTP generation failed: ${backendResult['message']}');
+        // Continue anyway - Firebase SMS will still work
+      } else {
+        print('✅ Backend OTP generated successfully');
+      }
+
+      // Send OTP via Firebase SMS
       await FirebaseAuth.instance.verifyPhoneNumber(
         phoneNumber: '+91$phone',
+        timeout: const Duration(seconds: 60),
         verificationCompleted: (PhoneAuthCredential credential) async {
-          // Automatic handling (Android only)
-          await FirebaseAuth.instance.signInWithCredential(credential);
+          // Automatic SMS retrieval (Android only)
+          print('✅ SMS auto-retrieved on Android');
         },
         verificationFailed: (FirebaseAuthException e) {
-          setState(() => _isLoading = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Verification Failed: ${e.message}')),
-          );
+          if (mounted) {
+            setState(() => _isLoading = false);
+            print('❌ Firebase Verification Failed: ${e.code} - ${e.message}');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error: ${e.message}')),
+            );
+          }
         },
         codeSent: (String verificationId, int? resendToken) {
-          setState(() => _isLoading = false);
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => OtpVerificationScreen(
-                phoneNumber: '91$phone',
-                verificationId: verificationId,
+          print('✅ OTP SMS Sent to +91$phone');
+          print('🔐 Verification ID: $verificationId');
+          if (mounted) {
+            setState(() => _isLoading = false);
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => OtpVerificationScreen(
+                  phoneNumber: '+91$phone',
+                  backendPhoneNumber: '91$phone', // Send to backend without +
+                  verificationId: verificationId,
+                ),
               ),
-            ),
-          );
+            );
+          }
         },
-        codeAutoRetrievalTimeout: (String verificationId) {},
+        codeAutoRetrievalTimeout: (String verificationId) {
+          print('⏱️ OTP timeout - manual entry required for +91$phone');
+          if (mounted) {
+            setState(() => _isLoading = false);
+          }
+        },
       );
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
+        print('❌ Firebase Phone Auth Error: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: ${e.toString()}')),
         );

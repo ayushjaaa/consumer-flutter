@@ -56,25 +56,14 @@ class _OneTap365AppState extends State<OneTap365App> {
 
   Future<void> _initFCM() async {
     try {
-      // Request permissions (especially for iOS)
-      await FirebaseMessaging.instance.requestPermission();
-
-      // Get the device token
-      String? token = await FirebaseMessaging.instance.getToken();
-      if (token != null) {
-        print('✅ FCM Token: $token');
-        // TODO: Send this token to your backend along with phone number during signup/OTP verification
-      } else {
-        print('⚠️ FCM Token is null');
-      }
-
-      // Listen for foreground messages
+      // Listen for foreground messages (optional, not required for OTP)
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        print('Received a foreground message: ${message.notification?.title}');
-        // Handle the message as needed
+        print(
+            '📨 Received a foreground message: ${message.notification?.title}');
       });
+      print('✅ FCM listener initialized');
     } catch (e) {
-      print('❌ FCM Error: $e');
+      print('⚠️ FCM initialization note: $e');
     }
   }
 

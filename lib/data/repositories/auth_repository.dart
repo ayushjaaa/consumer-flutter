@@ -123,7 +123,13 @@ class AuthRepository {
         },
       );
 
-      print('✅ OTP Send Successful: ${response.toString()}');
+      // Extract and display OTP for testing
+      final otp =
+          response['otp'] ?? response['data']?['otp'] ?? 'Check backend logs';
+      print('✅ OTP Send Successful');
+      print('🔐 OTP Code: $otp');
+      print('📋 Full Response: ${response.toString()}');
+
       return {
         'success': true,
         'message': response['message'] ?? 'OTP sent successfully',
@@ -146,6 +152,10 @@ class AuthRepository {
     required String otp,
   }) async {
     try {
+      print('🔐 Verifying OTP:');
+      print('   Phone: $phoneNumber');
+      print('   OTP: $otp');
+
       // Get FCM token safely (may not be available on simulators)
       String? fcmToken;
       try {
@@ -165,6 +175,8 @@ class AuthRepository {
           if (fcmToken != null && fcmToken.isNotEmpty) 'fcm_token': fcmToken,
         },
       );
+
+      print('✅ OTP Verification Response: ${response.toString()}');
 
       final user =
           User.fromJson(response['user'] ?? response['data']?['user'] ?? {});

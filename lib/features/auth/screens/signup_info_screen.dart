@@ -49,6 +49,12 @@ class _SignUpInfoScreenState extends State<SignUpInfoScreen> {
     );
   }
 
+  /// Format phone number for backend (remove + prefix)
+  String _formatPhoneForBackend(String phone) {
+    // Remove + if present: "+919876543210" -> "919876543210"
+    return phone.replaceAll('+', '').replaceAll(' ', '');
+  }
+
   Widget _buildTextField({
     required String hint,
     bool obscure = false,
@@ -96,6 +102,7 @@ class _SignUpInfoScreenState extends State<SignUpInfoScreen> {
     final phone = _phoneController.text.trim().isEmpty
         ? widget.phoneNumber
         : _phoneController.text.trim();
+    final formattedPhone = _formatPhoneForBackend(phone);
     final username = _usernameController.text.trim();
     final password = _passwordController.text;
     final confirmPassword = _confirmPasswordController.text;
@@ -124,7 +131,7 @@ class _SignUpInfoScreenState extends State<SignUpInfoScreen> {
       final result = await _authRepository.register(
         fullName: fullName,
         email: email,
-        phoneNumber: phone,
+        phoneNumber: formattedPhone,
         password: password,
         username: username.isEmpty ? null : username,
       );
@@ -160,6 +167,7 @@ class _SignUpInfoScreenState extends State<SignUpInfoScreen> {
     final phone = _phoneController.text.trim().isEmpty
         ? widget.phoneNumber
         : _phoneController.text.trim();
+    final formattedPhone = _formatPhoneForBackend(phone);
     final username = _usernameController.text.trim();
     final password = _passwordController.text;
     final confirmPassword = _confirmPasswordController.text;
@@ -188,7 +196,7 @@ class _SignUpInfoScreenState extends State<SignUpInfoScreen> {
       final result = await _authRepository.register(
         fullName: fullName,
         email: email,
-        phoneNumber: phone,
+        phoneNumber: formattedPhone,
         password: password,
         username: username.isEmpty ? null : username,
       );

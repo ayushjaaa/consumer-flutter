@@ -20,9 +20,9 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
   // Store current payment details for backend confirmation
   Map<String, dynamic>? _currentPaymentOrder;
 
-  // Razorpay Test Keys
-  static const String RAZORPAY_KEY_ID = 'rzp_test_SUdRBcsuXaJvyM';
-  static const String RAZORPAY_KEY_SECRET = 'y1Ip6i8ofpKgAQRlvmWzSKnA';
+  // Razorpay Production Keys
+  static const String RAZORPAY_KEY_ID = 'rzp_live_Sa6AlzKM1BdMum';
+  static const String RAZORPAY_KEY_SECRET = 'kmiuExnFYGWl51aPzms46geG';
 
   @override
   void initState() {
@@ -88,17 +88,13 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
       print('📱 Phone: ${authProvider.user?.phoneNumber}');
 
       // Call backend to create order
-      print('🌐 Sending request to: /create-payment-order');
+      print('🌐 Sending request to: /api/create-order');
       final response = await _apiService.post(
-        '/create-payment-order', // Adjust endpoint as needed
+        '/api/create-order',
         body: {
           'user_id': userId,
-          'plan_id': plan['id'],
-          'plan_name': plan['plan_name'],
+          'subscription_id': plan['id'],
           'amount': plan['price'],
-          'currency': 'INR',
-          'email': authProvider.user?.email ?? '',
-          'phone': authProvider.user?.phoneNumber ?? '',
         },
       );
 
@@ -109,8 +105,8 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
 
       if (response['success'] == true) {
         final orderData = {
-          'order_id': response['data']['order_id'],
-          'razorpay_order_id': response['data']['razorpay_order_id'],
+          'order_id': response['data']?['order_id'],
+          'razorpay_order_id': response['data']?['razorpay_order_id'],
           'user_id': userId,
           'plan_id': plan['id'],
           'plan_name': plan['plan_name'],
@@ -130,9 +126,9 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
       if (e.toString().contains('404') ||
           e.toString().contains('Resource not found')) {
         print('\n⚠️  BACKEND ENDPOINT NOT IMPLEMENTED!');
+        print('📌 Backend developer needs to create: POST /api/create-order');
         print(
-            '📌 Backend developer needs to create: POST /api/create-payment-order');
-        print('📋 See RAZORPAY_INTEGRATION.md for endpoint specifications');
+            '📋 Expected body: {"user_id": int, "subscription_id": int, "amount": number}');
       }
 
       print('======================================================\n');
@@ -168,18 +164,13 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
       print('📋 Plan: ${_currentPaymentOrder!['plan_name']}');
       print('💰 Amount: ₹${_currentPaymentOrder!['amount']}');
 
-      print('🌐 Sending request to: /confirm-payment');
+      print('🌐 Sending request to: /api/verify-payment');
       final confirmResponse = await _apiService.post(
-        '/confirm-payment', // Adjust endpoint as needed
+        '/api/verify-payment',
         body: {
-          'user_id': _currentPaymentOrder!['user_id'],
-          'plan_id': _currentPaymentOrder!['plan_id'],
-          'order_id': _currentPaymentOrder!['order_id'],
           'razorpay_order_id': response.orderId,
           'razorpay_payment_id': response.paymentId,
           'razorpay_signature': response.signature,
-          'amount': _currentPaymentOrder!['amount'],
-          'plan_name': _currentPaymentOrder!['plan_name'],
         },
       );
 
@@ -473,21 +464,15 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
                         width: 300,
                         margin: const EdgeInsets.only(right: 16, bottom: 8),
                         decoration: BoxDecoration(
-                          color: isPopular
-                              ? AppColors.primary.withOpacity(0.1)
-                              : Colors.white,
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: isPopular
-                                ? AppColors.primary
-                                : Colors.grey.shade300,
-                            width: isPopular ? 2 : 1,
+                            color: Colors.grey.shade300,
+                            width: 1,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: isPopular
-                                  ? AppColors.primary.withOpacity(0.3)
-                                  : Colors.grey.withOpacity(0.1),
+                              color: Colors.grey.withOpacity(0.1),
                               blurRadius: 12,
                               offset: const Offset(0, 4),
                             ),
@@ -564,12 +549,8 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
                                 width: double.infinity,
                                 child: ElevatedButton(
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: isPopular
-                                        ? AppColors.primary
-                                        : Colors.grey.shade300,
-                                    foregroundColor: isPopular
-                                        ? Colors.white
-                                        : Colors.black87,
+                                    backgroundColor: AppColors.primary,
+                                    foregroundColor: Colors.white,
                                     padding: const EdgeInsets.symmetric(
                                       vertical: 12,
                                     ),
@@ -582,12 +563,10 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
                                   },
                                   child: Text(
                                     'Buy Now',
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
-                                      color: isPopular
-                                          ? Colors.white
-                                          : Colors.black87,
+                                      color: Colors.white,
                                     ),
                                   ),
                                 ),

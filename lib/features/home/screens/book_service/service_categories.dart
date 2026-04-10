@@ -213,15 +213,6 @@ class _ServiceCategoriesScreenState extends State<ServiceCategoriesScreen> {
                       color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${category.listingCount ?? 234} listings',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.white60,
-                    ),
-                  ),
                 ],
               ),
             ),
