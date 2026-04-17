@@ -8,6 +8,7 @@ G_DECLARE_FINAL_TYPE(MyApplication,
                      MY,
                      APPLICATION,
                      GtkApplication)
+                     
 
 /**
  * my_application_new:
